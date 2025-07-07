@@ -1,5 +1,5 @@
 resource "aws_codedeploy_app" "codepipeline_app" {
-  name = "MyCodeDeployApp"
+  name             = "MyCodeDeployApp"
   compute_platform = "Server" # For EC2, or "Lambda" if using Lambda
 }
 
