@@ -1,5 +1,5 @@
 resource "aws_codedeploy_app" "codepipeline_app" {
-  name             = "MyCodeDeployApp"
+  name = "MyCodeDeployApp"
   compute_platform = "Server" # For EC2, or "Lambda" if using Lambda
 }
 
@@ -8,10 +8,11 @@ resource "aws_codedeploy_deployment_group" "deployment_group" {
   deployment_group_name = "MyDeploymentGroup"
   service_role_arn      = aws_iam_role.codedeploy_role.arn
 
-  deployment_style {
-    deployment_option = "WITH_ROLLBACK"
-    deployment_type   = "IN_PLACE"
-  }
+ deployment_style {
+  deployment_type   = "IN_PLACE"
+  deployment_option = "WITHOUT_TRAFFIC_CONTROL"
+}
+
 
   ec2_tag_set {
     ec2_tag_filter {
