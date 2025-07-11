@@ -25,20 +25,52 @@ resource "aws_iam_role_policy" "codebuild_policy" {
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
+      # ✅ CloudWatch Logs permissions
       {
-        Effect   = "Allow"
-        Action   = [
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:GetLogEvents"
+        ],
+        Resource = "*"
+      },
+
+      # ✅ S3 access for build artifacts
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:GetBucketLocation"
+        ],
+        Resource = "*"
+      },
+
+      # ✅ CodeBuild access
+      {
+        Effect = "Allow",
+        Action = [
+          "codebuild:BatchGetBuilds",
+          "codebuild:StartBuild"
+        ],
+        Resource = "*"
+      },
+
+      # ✅ Existing permissions
+      {
+        Effect = "Allow",
+        Action = [
           "codedeploy:GetApplication",
           "iam:GetRolePolicy",
           "iam:ListAttachedRolePolicies"
-        ]
+        ],
         Resource = "*"
-      },
-      # Keep any existing permissions here...
+      }
     ]
   })
 }
-
 
 # -----------------------------
 # CodeDeploy IAM Role
