@@ -19,37 +19,26 @@ resource "aws_iam_role" "codebuild_role" {
 }
 
 resource "aws_iam_role_policy" "codebuild_policy" {
-  name = "codebuild_policy"
-  role = aws_iam_role.codebuild_role.id
+  name = "codebuild-inline-policy"
+  role = aws_iam_role.codebuild_role.name
 
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow",
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents",
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:GetBucketVersioning",
-          "s3:ListBucket",
-          "codebuild:BatchGetBuilds",
-          "codebuild:StartBuild",
-          "codebuild:BatchGetProjects",
-          "codedeploy:*",
-          "codepipeline:ListPipelines",
-          "codepipeline:GetPipeline",
-          "codepipeline:ListTagsForResource",
-          "iam:GetRole",
-          "iam:PassRole"
-        ],
+        Effect   = "Allow"
+        Action   = [
+          "codedeploy:GetApplication",
+          "iam:GetRolePolicy",
+          "iam:ListAttachedRolePolicies"
+        ]
         Resource = "*"
-      }
+      },
+      # Keep any existing permissions here...
     ]
   })
 }
+
 
 # -----------------------------
 # CodeDeploy IAM Role
@@ -114,10 +103,8 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
           "s3:ListBucket"
         ],
         Resource = [
-          "arn:aws:s3:::terraform-backend-ani123",
-          "arn:aws:s3:::terraform-backend-ani123/*",
-          "arn:aws:s3:::codepipeline-artifact-b8452f77",
-          "arn:aws:s3:::codepipeline-artifact-b8452f77/*"
+          aws_s3_bucket.artifact_bucket.arn,
+          "${aws_s3_bucket.artifact_bucket.arn}/*"
         ]
       },
       {
@@ -126,8 +113,26 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
           "codebuild:StartBuild",
           "codebuild:BatchGetBuilds",
           "codebuild:BatchGetProjects",
-          "codedeploy:*",
+          "codedeploy:*"
+        ],
+        Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
           "iam:PassRole"
+        ],
+        Resource = [
+          aws_iam_role.codebuild_role.arn,
+          aws_iam_role.codedeploy_role.arn
+        ]
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
         ],
         Resource = "*"
       }
