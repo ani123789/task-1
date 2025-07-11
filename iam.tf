@@ -25,7 +25,6 @@ resource "aws_iam_role_policy" "codebuild_policy" {
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
-      # ✅ CloudWatch Logs permissions
       {
         Effect = "Allow",
         Action = [
@@ -36,19 +35,21 @@ resource "aws_iam_role_policy" "codebuild_policy" {
         ],
         Resource = "*"
       },
-
-      # ✅ S3 access for build artifacts
       {
         Effect = "Allow",
         Action = [
           "s3:GetObject",
           "s3:PutObject",
-          "s3:GetBucketLocation"
+          "s3:GetBucketLocation",
+          "s3:ListBucket"
         ],
-        Resource = "*"
+        Resource = [
+          "${aws_s3_bucket.artifact_bucket.arn}",
+          "${aws_s3_bucket.artifact_bucket.arn}/*",
+          "arn:aws:s3:::terraform-backend-ani123",
+          "arn:aws:s3:::terraform-backend-ani123/*"
+        ]
       },
-
-      # ✅ CodeBuild access
       {
         Effect = "Allow",
         Action = [
@@ -57,8 +58,6 @@ resource "aws_iam_role_policy" "codebuild_policy" {
         ],
         Resource = "*"
       },
-
-      # ✅ Existing permissions
       {
         Effect = "Allow",
         Action = [
@@ -135,7 +134,7 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
           "s3:ListBucket"
         ],
         Resource = [
-          aws_s3_bucket.artifact_bucket.arn,
+          "${aws_s3_bucket.artifact_bucket.arn}",
           "${aws_s3_bucket.artifact_bucket.arn}/*"
         ]
       },
