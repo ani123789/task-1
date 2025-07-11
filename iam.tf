@@ -34,36 +34,18 @@ resource "aws_iam_role_policy" "codebuild_policy" {
           "s3:GetObject",
           "s3:PutObject",
           "s3:GetBucketVersioning",
+          "s3:ListBucket",
           "codebuild:BatchGetBuilds",
           "codebuild:StartBuild",
-          "iam:PassRole",
-          "codedeploy:GetApplication",
-          "codedeploy:GetDeploymentGroup",
-          "codedeploy:RegisterApplicationRevision",
-          "codedeploy:CreateDeployment",
-          "codedeploy:GetDeployment",
-          "codedeploy:GetDeploymentConfig",
-          "codedeploy:ListTagsForResource",
-          "codepipeline:GetPipeline",
+          "codebuild:BatchGetProjects",
+          "codedeploy:*",
           "codepipeline:ListPipelines",
-          "codepipeline:ListTagsForResource"
+          "codepipeline:GetPipeline",
+          "codepipeline:ListTagsForResource",
+          "iam:GetRole",
+          "iam:PassRole"
         ],
         Resource = "*"
-      },
-      {
-        Effect = "Allow",
-        Action = [
-          "s3:ListBucket"
-        ],
-        Resource = "arn:aws:s3:::terraform-backend-ani123"
-      },
-      {
-        Effect = "Allow",
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject"
-        ],
-        Resource = "arn:aws:s3:::terraform-backend-ani123/*"
       }
     ]
   })
@@ -126,41 +108,24 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
       {
         Effect = "Allow",
         Action = [
-          "s3:*",
-          "codebuild:*",
-          "codedeploy:*",
-          "iam:PassRole"
-        ],
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy" "codebuild_getrole_policy" {
-  name = "codebuild-getrole-policy"
-  role = aws_iam_role.codebuild_role.name
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = [
-          "iam:GetRole"
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:GetBucketVersioning",
+          "s3:ListBucket"
         ],
         Resource = [
-          aws_iam_role.codebuild_role.arn,
-          aws_iam_role.codedeploy_role.arn,
-          aws_iam_role.codepipeline_role.arn
+          "arn:aws:s3:::terraform-backend-ani123",
+          "arn:aws:s3:::terraform-backend-ani123/*"
         ]
       },
       {
         Effect = "Allow",
         Action = [
-          "s3:*",
-          "logs:*",
-          "codebuild:*"
+          "codebuild:StartBuild",
+          "codebuild:BatchGetBuilds",
+          "codebuild:BatchGetProjects",
+          "codedeploy:*",
+          "iam:PassRole"
         ],
         Resource = "*"
       }
