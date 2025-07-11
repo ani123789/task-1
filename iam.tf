@@ -119,10 +119,48 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
       {
         Effect = "Allow",
         Action = [
+          "codestar-connections:UseConnection"
+        ],
+        Resource = "arn:aws:codeconnections:eu-north-1:934697152100:connection/930c111b-24a6-45a8-ab3e-409d591de38b"
+      },
+      {
+        Effect = "Allow",
+        Action = [
           "s3:*",
           "codebuild:*",
           "codedeploy:*",
           "iam:PassRole"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "codebuild_getrole_policy" {
+  name = "codebuild-getrole-policy"
+  role = aws_iam_role.codebuild_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "iam:GetRole"
+        ],
+        Resource = [
+          aws_iam_role.codebuild_role.arn,
+          aws_iam_role.codedeploy_role.arn,
+          aws_iam_role.codepipeline_role.arn
+        ]
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:*",
+          "logs:*",
+          "codebuild:*"
         ],
         Resource = "*"
       }

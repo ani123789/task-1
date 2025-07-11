@@ -1,20 +1,27 @@
 package test
 
 import (
+    "os"
     "testing"
 
     "github.com/gruntwork-io/terratest/modules/terraform"
     "github.com/stretchr/testify/assert"
 )
 
-func TestCodePipeline(t *testing.T) {
+func TestTerraformPipeline(t *testing.T) {
     terraformOptions := &terraform.Options{
-        TerraformDir: "../", // points to your main Terraform project
+        TerraformDir: "../",
     }
 
+    // Initialize and apply Terraform
     terraform.InitAndApply(t, terraformOptions)
-    defer terraform.Destroy(t, terraformOptions)
 
-    pipelineName := terraform.Output(t, terraformOptions, "pipeline_name")
-    assert.NotEmpty(t, pipelineName)
+    // ❗️Skip destroy if SKIP_DESTROY is set
+    if os.Getenv("SKIP_DESTROY") != "true" {
+        defer terraform.Destroy(t, terraformOptions)
+    }
+
+    // Your assertions go here
+    bucketName := terraform.Output(t, terraformOptions, "artifact_bucket_name")
+    assert.Contains(t, bucketName, "codepipeline-artifact")
 }
