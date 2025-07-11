@@ -115,7 +115,9 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
         ],
         Resource = [
           "arn:aws:s3:::terraform-backend-ani123",
-          "arn:aws:s3:::terraform-backend-ani123/*"
+          "arn:aws:s3:::terraform-backend-ani123/*",
+          "arn:aws:s3:::codepipeline-artifact-b8452f77",
+          "arn:aws:s3:::codepipeline-artifact-b8452f77/*"
         ]
       },
       {
