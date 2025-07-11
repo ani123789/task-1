@@ -9,7 +9,6 @@ resource "aws_codepipeline" "codepipeline" {
 
   stage {
     name = "Source"
-
     action {
       name             = "Source"
       category         = "Source"
@@ -17,7 +16,6 @@ resource "aws_codepipeline" "codepipeline" {
       provider         = "CodeStarSourceConnection"
       version          = "1"
       output_artifacts = ["source_output"]
-
       configuration = {
         ConnectionArn    = "arn:aws:codeconnections:eu-north-1:934697152100:connection/930c111b-24a6-45a8-ab3e-409d591de38b"
         FullRepositoryId = "ani123789/task-1"
@@ -26,10 +24,8 @@ resource "aws_codepipeline" "codepipeline" {
     }
   }
 
-
   stage {
     name = "Build"
-
     action {
       name             = "Build"
       category         = "Build"
@@ -38,11 +34,25 @@ resource "aws_codepipeline" "codepipeline" {
       input_artifacts  = ["source_output"]
       output_artifacts = ["build_output"]
       version          = "1"
-
       configuration = {
         ProjectName = aws_codebuild_project.codebuild_project.name
       }
     }
   }
-}
 
+  stage {
+    name = "Deploy"
+    action {
+      name             = "Deploy"
+      category         = "Deploy"
+      owner            = "AWS"
+      provider         = "CodeDeploy"
+      input_artifacts  = ["build_output"]
+      version          = "1"
+      configuration = {
+        ApplicationName     = aws_codedeploy_app.app.name
+        DeploymentGroupName = aws_codedeploy_deployment_group.deployment_group.deployment_group_name
+      }
+    }
+  }
+}

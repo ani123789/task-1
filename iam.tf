@@ -1,5 +1,5 @@
 # -----------------------------
-# CodeBuild IAM Role + Policy
+# CodeBuild IAM Role
 # -----------------------------
 resource "aws_iam_role" "codebuild_role" {
   name = "codebuild-role"
@@ -18,57 +18,40 @@ resource "aws_iam_role" "codebuild_role" {
   })
 }
 
-resource "aws_iam_role_policy" "codebuild_policy" {
-  name = "codebuild-inline-policy"
-  role = aws_iam_role.codebuild_role.name
-
+resource "aws_iam_policy" "codebuild_policy" {
+  name        = "codebuild-policy"
+  description = "Policy for CodeBuild to run Terraform"
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
         Effect = "Allow",
         Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents",
-          "logs:GetLogEvents"
-        ],
-        Resource = "*"
-      },
-      {
-        Effect = "Allow",
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:GetBucketLocation",
-          "s3:ListBucket"
-        ],
-        Resource = [
-          "${aws_s3_bucket.artifact_bucket.arn}",
-          "${aws_s3_bucket.artifact_bucket.arn}/*",
-          "arn:aws:s3:::terraform-backend-ani123",
-          "arn:aws:s3:::terraform-backend-ani123/*"
-        ]
-      },
-      {
-        Effect = "Allow",
-        Action = [
-          "codebuild:BatchGetBuilds",
-          "codebuild:StartBuild"
-        ],
-        Resource = "*"
-      },
-      {
-        Effect = "Allow",
-        Action = [
-          "codedeploy:GetApplication",
-          "iam:GetRolePolicy",
-          "iam:ListAttachedRolePolicies"
+          "logs:*",
+          "s3:*",
+          "codebuild:*",
+          "codedeploy:*",
+          "codepipeline:*",
+          "sts:AssumeRole",
+          "iam:GetRole",
+          "iam:GetPolicy",
+          "iam:GetPolicyVersion",         # <-- Added!
+          "iam:GetRolePolicy",            # <-- Added!
+          "iam:ListAttachedRolePolicies",
+          "iam:ListRolePolicies",
+          "codedeploy:ListTagsForResource",
+          "s3:GetBucketPolicy"
         ],
         Resource = "*"
       }
     ]
   })
+}
+
+
+resource "aws_iam_role_policy_attachment" "codebuild_policy_attach" {
+  role       = aws_iam_role.codebuild_role.name
+  policy_arn = aws_iam_policy.codebuild_policy.arn
 }
 
 # -----------------------------
@@ -92,7 +75,7 @@ resource "aws_iam_role" "codedeploy_role" {
 }
 
 # -----------------------------
-# CodePipeline IAM Role + Policy
+# CodePipeline IAM Role
 # -----------------------------
 resource "aws_iam_role" "codepipeline_role" {
   name = "codepipeline-role"
@@ -113,7 +96,7 @@ resource "aws_iam_role" "codepipeline_role" {
 
 resource "aws_iam_role_policy" "codepipeline_policy" {
   name = "codepipeline-policy"
-  role = aws_iam_role.codepipeline_role.id
+  role = aws_iam_role.codepipeline_role.name
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -169,4 +152,9 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
       }
     ]
   })
+}
+
+resource "aws_iam_role_policy_attachment" "codedeploy_role_attach" {
+  role       = aws_iam_role.codedeploy_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
 }
