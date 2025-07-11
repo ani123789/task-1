@@ -1,58 +1,20 @@
-# ===============================
-# IAM Role for CodePipeline
-# ===============================
-resource "aws_iam_role" "codepipeline_role" {
-  name = "codepipeline_role"
+# -----------------------------
+# CodeBuild IAM Role + Policy
+# -----------------------------
+resource "aws_iam_role" "codebuild_role" {
+  name = "codebuild-role"
 
   assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Principal = {
-        Service = "codepipeline.amazonaws.com"
-      },
-      Action = "sts:AssumeRole"
-    }]
-  })
-}
-
-resource "aws_iam_role_policy" "codepipeline_policy" {
-  name = "codepipeline_policy"
-  role = aws_iam_role.codepipeline_role.id
-
-  policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
         Effect = "Allow",
-        Action = [
-          "codebuild:BatchGetBuilds",
-          "codebuild:StartBuild",
-          "s3:*",
-          "iam:PassRole",
-          "codedeploy:*"
-        ],
-        Resource = "*"
+        Principal = {
+          Service = "codebuild.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
       }
     ]
-  })
-}
-
-# ===============================
-# IAM Role for CodeBuild
-# ===============================
-resource "aws_iam_role" "codebuild_role" {
-  name = "codebuild_role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Principal = {
-        Service = "codebuild.amazonaws.com"
-      },
-      Action = "sts:AssumeRole"
-    }]
   })
 }
 
@@ -66,9 +28,14 @@ resource "aws_iam_role_policy" "codebuild_policy" {
       {
         Effect = "Allow",
         Action = [
-          "s3:*",
-          "codebuild:*",
-          "logs:*",
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:GetBucketVersioning",
+          "codebuild:BatchGetBuilds",
+          "codebuild:StartBuild",
           "iam:PassRole",
           "codedeploy:GetApplication",
           "codedeploy:GetDeploymentGroup",
@@ -76,35 +43,89 @@ resource "aws_iam_role_policy" "codebuild_policy" {
           "codedeploy:CreateDeployment",
           "codedeploy:GetDeployment",
           "codedeploy:GetDeploymentConfig",
-          "codedeploy:ListTagsForResource", # ✅ This was missing
-          "codepipeline:GetPipeline",       # ✅ Optional but useful for plan
-          "codepipeline:ListPipelines"      # ✅ Optional for better visibility
+          "codedeploy:ListTagsForResource",
+          "codepipeline:GetPipeline",
+          "codepipeline:ListPipelines",
+          "codepipeline:ListTagsForResource"
         ],
         Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:ListBucket"
+        ],
+        Resource = "arn:aws:s3:::terraform-backend-ani123"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject"
+        ],
+        Resource = "arn:aws:s3:::terraform-backend-ani123/*"
       }
     ]
   })
 }
 
-# ===============================
-# IAM Role for CodeDeploy
-# ===============================
+# -----------------------------
+# CodeDeploy IAM Role
+# -----------------------------
 resource "aws_iam_role" "codedeploy_role" {
-  name = "codedeploy_role"
+  name = "codedeploy-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Principal = {
-        Service = "codedeploy.amazonaws.com"
-      },
-      Action = "sts:AssumeRole"
-    }]
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "codedeploy.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
   })
 }
 
-resource "aws_iam_role_policy_attachment" "codedeploy_role_attachment" {
-  role       = aws_iam_role.codedeploy_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
+# -----------------------------
+# CodePipeline IAM Role + Policy
+# -----------------------------
+resource "aws_iam_role" "codepipeline_role" {
+  name = "codepipeline-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "codepipeline.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "codepipeline_policy" {
+  name = "codepipeline-policy"
+  role = aws_iam_role.codepipeline_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:*",
+          "codebuild:*",
+          "codedeploy:*",
+          "iam:PassRole"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
 }
