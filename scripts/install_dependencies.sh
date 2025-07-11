@@ -1,9 +1,12 @@
 #!/bin/bash
+set -e
 
-# Use dnf instead of apt on Amazon Linux 2023
+# Update package info
 sudo dnf update -y
-sudo dnf install -y nginx
 
-# Start and enable nginx
-sudo systemctl start nginx
-sudo systemctl enable nginx
+# Install Apache (httpd)
+sudo dnf install -y httpd
+
+# Enable and start Apache
+sudo systemctl enable httpd
+sudo systemctl start httpd
