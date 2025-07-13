@@ -1,0 +1,13 @@
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: docker-secret
+  namespace: default
+spec:
+  encryptedData:
+    .dockerconfigjson: AgBhA...
+  template:
+    metadata:
+      name: docker-secret
+      namespace: default
+    type: kubernetes.io/dockerconfigjson

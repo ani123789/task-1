@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: terraform-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: terraform-app
+  template:
+    metadata:
+      labels:
+        app: terraform-app
+    spec:
+      containers:
+        - name: web
+          image: nginx:latest
+          ports:
+            - containerPort: 80
